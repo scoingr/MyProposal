@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mission: Love Proposal | Tuấn & Vân Anh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff0055;
+            --neon-blue: #00f2ff;
+            --neon-purple: #bd00ff;
+            --bg-dark: #050505;
+            --gold: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            height: 100vh; width: 100vw;
+            color: white;
+            position: relative;
+        }
+
+        /* --- BACKGROUND LAYERS --- */
+        .cyber-grid-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            perspective: 1000px; z-index: 0; opacity: 0.4; pointer-events: none;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+        }
+        .cyber-grid {
+            position: absolute; width: 200%; height: 200%; left: -50%; top: -50%;
+            background-image: linear-gradient(rgba(0, 242, 255, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 242, 255, 0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: rotateX(60deg) translateZ(-100px);
+            animation: gridMove 20s linear infinite;
+        }
+
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; mix-blend-mode: screen; pointer-events: none;}
+
+        /* --- UI CONTAINER --- */
+        .ui-container {
+            position: relative; z-index: 10;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
+
+        /* 1. HEADER */
+        .header-data {
+            text-align: center; margin-bottom: 10px;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 5px 15px; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 4px;
+        }
+        .system-status { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--neon-blue); letter-spacing: 2px; }
+        .main-title {
+             font-size: 1.8rem; font-weight: 900; text-transform: uppercase;
+             background: linear-gradient(to right, #fff, var(--neon-blue));
+             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+             text-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* 2. REACTOR HEART */
+        .reactor-container {
+            position: relative; width: 140px; height: 140px;
+            display: flex; justify-content: center; align-items: center;
+            margin: 5px 0;
+        }
+        .plasma-ring {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%; border: 2px solid transparent;
+            border-top: 2px solid var(--neon-blue);
+            border-bottom: 2px solid var(--neon-blue);
+            animation: spinRight 6s linear infinite;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+        .plasma-ring.inner {
+            width: 75%; height: 75%; 
+            border: none;
+            border-left: 2px solid var(--neon-pink);
+            border-right: 2px solid var(--neon-pink);
+            animation: spinLeft 4s linear infinite; 
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+        .core-heart {
+            font-size: 60px; color: #fff;
+            filter: drop-shadow(0 0 10px var(--neon-pink));
+            animation: heartbeat 1.2s infinite;
+        }
+
+        /* 3. NAMES */
+        .names-display { margin-bottom: 15px; text-align: center; }
+        .cyber-names {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem; font-weight: 700; letter-spacing: 2px;
+            color: var(--neon-purple);
+            text-shadow: 0 0 5px var(--neon-purple);
+        }
+
+        /* === 4. PROPOSAL BUTTON (HOTSPOT) === */
+        .proposal-area {
+            margin-top: 10px;
+            margin-bottom: auto; /* Đẩy xuống giữa */
+            display: flex; justify-content: center; align-items: center;
+            width: 100%;
+            height: 100px; /* Khu vực chứa nút */
+        }
+
+        .btn-proposal {
+            position: relative;
+            background: transparent;
+            color: var(--gold);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem; font-weight: 900;
+            padding: 15px 40px;
+            border: 2px solid var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.4s;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            clip-path: polygon(15% 0, 100% 0, 100% 70%, 85% 100%, 0 100%, 0 30%);
+            animation: btnPulse 2s infinite;
+            z-index: 100;
+        }
+        
+        .btn-proposal:active { transform: scale(0.95); }
+        
+        .btn-proposal.accepted {
+            background: var(--gold); color: #000;
+            border-color: #fff;
+            box-shadow: 0 0 50px var(--gold);
+            animation: none;
+            pointer-events: none; /* Không cho bấm lại */
+        }
+
+        /* 5. HOLO CHAT */
+        .holo-deck {
+            position: absolute; bottom: 20px; width: 90%;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .holo-chat-box {
+            position: relative; width: 100%; min-height: 100px;
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+            backdrop-filter: blur(5px); padding: 15px;
+            display: flex; align-items: center; justify-content: center;
+            clip-path: polygon(5% 0, 95% 0, 100% 20%, 100% 80%, 95% 100%, 5% 100%, 0% 80%, 0% 20%);
+        }
+        .typing-text {
+            font-family: 'Share Tech Mono', monospace; font-size: 1rem;
+            color: #fff; text-align: center; line-height: 1.4;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 40px; } }
+        @keyframes spinRight { 100% { transform: rotate(360deg); } }
+        @keyframes spinLeft { 100% { transform: rotate(-360deg); } }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        @keyframes btnPulse { 0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); } 50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); } 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); } }
+
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="cyber-grid-container"><div class="cyber-grid"></div></div>
+    <canvas id="fireworksCanvas"></canvas>
+
+    <div class="ui-container">
+        <div class="header-data">
+            <div class="system-status">>> SECURE CONNECTION ESTABLISHED <<</div>
+            <div class="main-title">VALENTINE DAY</div>
+        </div>
+
+        <div class="reactor-container">
+            <div class="plasma-ring"></div>
+            <div class="plasma-ring inner"></div>
+            <div class="core-heart">♥</div>
+        </div>
+
+        <div class="names-display">
+            <div class="cyber-names">TUẤN & VÂN ANH</div>
+        </div>
+
+        <div class="proposal-area">
+            <button class="btn-proposal" id="btnAction" onclick="handleProposal()">
+                LÀM VỢ ANH NHÉ
+            </button>
+        </div>
+
+        <div class="holo-deck">
+            <div class="holo-chat-box">
+                <span id="typewriter" class="typing-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CẤU HÌNH ---
+        const messages = [
+            "Đang tải dữ liệu tình yêu...",
+            "Phát hiện đối tượng: Vân Anh xinh đẹp.",
+            "Anh có một câu hỏi quan trọng...",
+            "Em hãy ấn vào nút bên trên đi!",
+            "Chờ đợi phản hồi..."
+        ];
+        
+        // --- LOGIC ---
+        let step = 0;
+        let charIndex = 0;
+        let isTyping = true;
+        let accepted = false;
+        const typeEl = document.getElementById('typewriter');
+        const btn = document.getElementById('btnAction');
+        const audio = document.getElementById('bgMusic');
+        let fireworksEnabled = false;
+
+        // Chạy chữ tự động ban đầu
+        function typeWriter() {
+            if (accepted) return; // Nếu đã đồng ý thì dừng chạy chữ cũ
+
+            const currentMsg = messages[step];
+            if (isTyping) {
+                if (charIndex < currentMsg.length) {
+                    typeEl.innerHTML += currentMsg.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeWriter, 50);
+                } else {
+                    isTyping = false;
+                    setTimeout(typeWriter, 2000); // Đọc xong dừng 2s
+                }
+            } else {
+                if (charIndex > 0) {
+                    typeEl.innerHTML = currentMsg.substring(0, charIndex - 1);
+                    charIndex--;
+                    setTimeout(typeWriter, 30);
+                } else {
+                    isTyping = true;
+                    step = (step + 1) % messages.length;
+                    setTimeout(typeWriter, 500);
+                }
+            }
+        }
+        typeWriter();
+
+        // Xử lý khi ấn nút
+        function handleProposal() {
+            accepted = true;
+            
+            // 1. Phát nhạc (Cần tương tác user để browser cho phép)
+            audio.play().catch(e => console.log("Lỗi phát nhạc: " + e));
+
+            // 2. Đổi giao diện nút
+            btn.classList.add('accepted');
+            btn.innerHTML = "MISSION SUCCESS! ❤️";
+
+            // 3. Đổi lời thoại chốt hạ
+            typeEl.innerHTML = "CẢM ƠN EM ĐÃ ĐỒNG Ý!<br>YÊU EM 3000!<br>Hẹn em một đám cưới thế kỷ!";
+
+            // 4. Kích hoạt pháo hoa điên cuồng
+            fireworksEnabled = true;
+            launchFireworks();
+        }
+
+        // --- PHÁO HOA ---
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        let particles = [];
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                this.velocity = { x: (Math.random() - 0.5) * 8, y: (Math.random() - 0.5) * 8 };
+                this.alpha = 1; this.friction = 0.96;
+            }
+            draw() {
+                ctx.globalAlpha = this.alpha; ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.fill();
+            }
+            update() {
+                this.velocity.x *= this.friction; this.velocity.y *= this.friction;
+                this.x += this.velocity.x; this.y += this.velocity.y; this.alpha -= 0.01;
+            }
+        }
+
+        function launchFireworks() {
+            if (!fireworksEnabled) return;
+            // Bắn liên tục
+            setInterval(() => {
+                const x = Math.random() * w; const y = Math.random() * h / 2;
+                const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
+                for (let i = 0; i < 30; i++) particles.push(new Particle(x, y, color));
+            }, 200);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; ctx.fillRect(0, 0, w, h);
+            
+            // Hiệu ứng nền nhẹ khi chưa bấm
+            if(!accepted && Math.random() < 0.05) {
+                particles.push(new Particle(Math.random()*w, h, '#222'));
+            }
+
+            particles.forEach((p, i) => {
+                if (p.alpha > 0) { p.update(); p.draw(); } else particles.splice(i, 1);
+            });
+        }
+        animate();
+    </script>
+</body>
+</html>
